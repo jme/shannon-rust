@@ -1,0 +1,6 @@
+*.swp
+*.dump
+*.o
+*.cmx
+*.out
+/target
