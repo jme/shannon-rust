@@ -1,11 +1,10 @@
-# Shannon Entropy calculation, from file or string inputs.
+## Shannon Entropy calculation, from file or string inputs.
 
 This is a straightforward implementation of a basic Shannon Entropy calculator in Rust.   
 [Wikipedia entry on Shannon Entropy](http://en.wikipedia.org/wiki/Entropy_%28information_theory%29)    
 
  Reads bytes from files and characters from strings, calculates the result appropriately.    
     
- 
 
 ## howto
 Run from command line, passing in a string or, with the -f flag, a filename.   
@@ -28,11 +27,34 @@ shannon -f demo.txt ->
   value: 1.84643934467    
  
 
+## performance  
+Just for kicks, here is a quick speed comparison of this code to a mostly similar [OCaml Shannon Entropy calculator](https://github.com/jme/shannon) I had previously written.  
+
+
+target file: rust-nightly (~100MB)   
+
+style A: using HashMap (Rust) / Hashtbl (OCaml) for the bins   
+
+shannon-rust (release build): 20.73s   
+ocaml-rust                  : 48.7s    
+
+   ----------------------------
+style B: bins as mutable arrays  
+
+shannon-rust (release build): 0.510s   
+ocaml-rust                  : 2.560s    
+
+
+There is a stale joke to the effect that optimization of code written in FP style leads right back to imperative-land. But I kind-of did do this to the OCaml code, whittling down the file reader into something mutable. Hopefully not so much Crude Hackery as 'pragmatic FP'.  
+
+Even so, for *this* quasi-toy program the Rust version(s) run at 2-5x the speed of *similar* OCaml version(s).  
+
+
 
 ## comments:
- Rust seems to have an interesting idiomatic style, although these are still early days and my experience with the language is minimal. The ML heritage certainly is there, as is the C/C++ feel. It's not really a functional programming language but still feels comfortable to someone who writes Clojure (and some OCaml) code most of the time.   
+ Rust seems to have an interesting idiomatic style, although these are still early days and my experience with the language is minimal. The ML heritage certainly is there, as is the C/C++ feel. It's not really a functional programming language but still feels comfortable to someone who writes Clojure (and some OCaml) code most of the time.  And it's fast.  
    
-Unfortunately this toy-like code doesn't really excercise the innovative ownership concepts & borrow-checker.    
+Unfortunately this toy-like code doesn't really excercise the innovative ownership concepts & borrow-checker.  Obviously I need to write some more Rust code :-)   
 
 
 
