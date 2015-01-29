@@ -28,10 +28,10 @@ shannon -f demo.txt ->
  
 
 ## performance  
-Just for kicks, here is a quick speed comparison of this code to a mostly similar [OCaml Shannon Entropy calculator](https://github.com/jme/shannon) I had previously written.  
+Just for kicks, here is a quick speed comparison of this code to a mostly similar [OCaml version](https://github.com/jme/shannon) I had previously written.  
 
 
-target file: rust-nightly (~100MB)   
+target file: rust-nightly_.tar.gz (~100MB)   
 
 style A: using HashMap (Rust) / Hashtbl (OCaml) for the bins   
 
@@ -45,7 +45,7 @@ shannon-rust (release build): 0.510s
 ocaml-rust                  : 2.560s    
 
 
-There is a stale joke to the effect that optimization of code written in FP style leads right back to imperative-land. But I kind-of did do this to the OCaml code, whittling down the file reader into something mutable. Hopefully not so much Crude Hackery as 'pragmatic FP'.  
+There is a stale joke to the effect that speed-run optimizations of code written in FP style lead right back to imperative-land. But I kind-of did do this to the OCaml code, whittling down the file reader into something mutable. Hopefully not so much Crude Hackery as 'pragmatic FP'.  
 
 Even so, for *this* quasi-toy program the Rust version(s) run at 2-5x the speed of *similar* OCaml version(s).  
 
@@ -54,7 +54,7 @@ Even so, for *this* quasi-toy program the Rust version(s) run at 2-5x the speed 
 ## comments:
  Rust seems to have an interesting idiomatic style, although these are still early days and my experience with the language is minimal. The ML heritage certainly is there, as is the C/C++ feel. It's not really a functional programming language but still feels comfortable to someone who writes Clojure (and some OCaml) code most of the time.  And it's fast.  
    
-Unfortunately this toy-like code doesn't really excercise the innovative ownership concepts & borrow-checker.  Obviously I need to write some more Rust code :-)   
+Unfortunately this toy-like code doesn't really excercise traits or the innovative ownership concepts & borrow-checker.  Obviously I need to write some more Rust code :-)   
 
 
 
@@ -66,7 +66,7 @@ Unfortunately this toy-like code doesn't really excercise the innovative ownersh
 
 ## License
 
-Copyright © 2014-2015 jm ervin
+Copyright © 2015 jm ervin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
