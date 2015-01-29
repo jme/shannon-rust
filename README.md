@@ -28,22 +28,22 @@ shannon -f demo.txt ->
  
 
 ## performance  
-Just for kicks, here is a quick speed comparison of this code to a mostly similar [OCaml version](https://github.com/jme/shannon) I had previously written.  
+Just for kicks, here is a quick speed comparison of this code to a mostly similar [OCaml version](https://github.com/jme/shannon) I had previously written:     
 
 
-   ----------------------------
 target file: rust-nightly_.tar.gz (~100MB)   
 
+   ----------------------------
 style A: using HashMap (Rust) / Hashtbl (OCaml) for the bins   
 
 shannon-rust (release build): 20.73s   
-ocaml                       : 48.7s    
+shannon-ocaml               : 48.7s    
 
    ----------------------------
 style B: bins as mutable arrays  
 
 shannon-rust (release build): 0.510s   
-ocaml                       : 2.560s    
+shannon-ocaml               : 2.560s    
 
 
 There is a stale joke to the effect that speed-run optimizations of code written in FP style lead right back to imperative-land. But I kind-of did do this to the OCaml code, whittling down the file reader into something mutable. Hopefully not so much Crude Hackery as 'pragmatic FP'.  
