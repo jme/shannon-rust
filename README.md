@@ -32,19 +32,19 @@ Just for kicks, here is an informal speed comparison of this code to a mostly si
 
 #### prep 
 
-Rust version: rust-1.0.0-nightly (c5961ad06)  
-OCaml version: 4.01.0  
+* Rust version: rust-1.0.0-nightly (c5961ad06)  
+* OCaml version: 4.01.0  
 
-rust executables were built with 'cargo --release'  
-ocaml builds were built using the -compact option  
+* rust executables were built with 'cargo --release'  
+* ocaml builds were built using the -compact option  
 
-target data file for analysis: [rust-nightly-x86_64-unknown-linux-gnu.tar.gz (~116MB)](   http://static.rust-lang.org/dist/2015-01-04/rust-nightly-x86_64-unknown-linux-gnu.tar.gz)  
+* target data file for analysis: [rust-nightly-x86_64-unknown-linux-gnu.tar.gz (~116MB)](   http://static.rust-lang.org/dist/2015-01-04/rust-nightly-x86_64-unknown-linux-gnu.tar.gz)  
 
-all runs were made on the same (fairly low-end) laptop, under Ubuntu 14.04.1 LTS  
+* all runs were made on the same (fairly low-end) laptop, under Ubuntu 14.04.1 LTS  
 
-all run elapsed times are *real* durations as measured using the unix *time* command.  
+* all run elapsed times are *real* durations as measured using the unix *time* command.  
 
-profile data collected with [Oprofile](http://oprofile.sourceforge.net/news/): "operf *filename*, then: "opreport -l" and "opreport --callgraph"  
+* profile data collected with [Oprofile](http://oprofile.sourceforge.net/news/): "operf *filename*, then: "opreport -l" and "opreport --callgraph"  
 
 
 #### results
@@ -80,9 +80,11 @@ Oprofile runs for all 4 variants ([rust-array](perf/perf_rust_array.txt), [rust-
 There is a stale joke to the effect that speed-run optimizations of code written in FP style lead right back to imperative-land. But I kind-of did do this to the OCaml code, whittling down the file reader into something mutable. Hopefully not so much Crude Hackery as 'pragmatic FP'.  
 The Rust variant was patterned after the OCaml code.   
 
-Even so, for *this* quasi-toy program the Rust version(s) run at 2-4x the speed of *similar* OCaml version(s).  
+Even so, for **_this_** quasi-toy program the Rust version(s) run at 2-4x the speed of **_similar_** OCaml version(s).  
 
-A next refinement to the OCaml code would be to look for expensive boxing and write-barrier calls...TDB  
+> A next refinement to the OCaml code would be to look for expensive boxing and write-barrier calls...TDB  
+
+
 
  Rust seems to have an interesting idiomatic style, although these are still early days and my experience with the language is minimal. The ML heritage certainly is there, as is the C/C++ feel. It's not really a functional programming language but still feels comfortable to someone who writes Clojure (and some OCaml) code most of the time. And it's fast.   
    
