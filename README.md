@@ -72,7 +72,7 @@ The HashMap / Hashtbl constructs are inappropriate for speed-oriented binning in
 
 Rust, and its std libs are evolving very rapidly right now so that HashMap performance may be in flux as well.  
 
-The array binning performance differences are slightly surprising. There are further possible tweaks to the OCaml code (unboxing, write-barrier avoidance, etc) that might tighten up the spread, but I have skipped that deeper dive for now.  
+The array binning performance differences are slightly surprising. There are further possible tweaks to the OCaml code (unboxing, polymorphic compare & write-barrier avoidance, etc) that might tighten up the spread, but I have skipped that deeper dive for now.  
 
 Oprofile runs for all 4 variants ([rust-array](perf/perf_rust_array.txt), [rust-hashmap](perf/perf_rust_hm.txt), [ocaml-array](perf/perf_ocaml_array.txt) and [ocaml-hashtbl](perf/perf_ocaml_hm.txt) ) are unsurprising: Hashtbl/HashMap versions spend most of their time in Hash structure operations, while the array versions are limited more by memory and file-read ops.  
 
@@ -83,7 +83,7 @@ The Rust variant was patterned after the OCaml code.
 Even so, for **_this_** quasi-toy program the Rust version(s) run at 2-4x the speed of **_similar_** OCaml version(s).  
 
 
-  
+   ----------------------------
    
  Rust seems to have an interesting idiomatic style, although these are still early days and my experience with the language is minimal. The ML heritage certainly is there, as is the C/C++ feel. It's not really a functional programming language but still feels comfortable to someone who writes Clojure (and some OCaml) code most of the time. And it's fast.   
    
