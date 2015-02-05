@@ -4,21 +4,20 @@ This is a straightforward implementation of a basic Shannon Entropy calculator i
 [Wikipedia entry on Shannon Entropy](http://en.wikipedia.org/wiki/Entropy_%28information_theory%29)    
 
  Reads bytes from files and characters from strings, calculates the result appropriately.    
-    
+ Fairly quick; should churn though 100MB+ files in less than a second.   
+
 
 ## howto
 Run from command line, passing in a string or, with the -f flag, a filename.   
 -h or --help for help.   
 Returns the basic Shannon Entropy in bits.   
 
-Fairly quick; release builds should churn though 100MB+ files in less than a second.   
-
-
-## examples
+### examples
 
 Shannon Entropy of the string "1223334444" (also contained in the demo.txt file)   
 
 shannon 1223334444     
+
 
 or via file:   
 shannon -f demo.txt ->    
@@ -28,40 +27,66 @@ shannon -f demo.txt ->
  
 
 ## performance  
-Just for kicks, here is a quick speed comparison of this code to a mostly similar [OCaml version](https://github.com/jme/shannon) I had previously written:     
+Just for kicks, here is an informal speed comparison of this code to a mostly similar [OCaml version](https://github.com/jme/shannon) I had previously written:     
 
 
-target file: rust-nightly_.tar.gz (~100MB)   
+### prep 
+
+Rust version: rust-1.0.0-nightly (c5961ad06)  
+OCaml version: 4.01.0  
+
+rust executables were built with 'cargo --release'  
+ocaml builds were built using the -compact option  
+
+target data file for analysis: [rust-nightly-x86_64-unknown-linux-gnu.tar.gz (~116MB)](   http://static.rust-lang.org/dist/2015-01-04/rust-nightly-x86_64-unknown-linux-gnu.tar.gz)  
+
+all runs were made on the same (fairly low-end) laptop, under Ubuntu 14.04.1 LTS  
+
+all run elapsed times are *real* durations as measured using the unix *time* command.  
+
+profile data collected with [Oprofile](http://oprofile.sourceforge.net/news/): "operf *filename*, then: "opreport -l" and "opreport --callgraph"  
+
+
+### results
+
+given times are in seconds and are each the average over three runs  
 
    ----------------------------
 style A: using HashMap (Rust) / Hashtbl (OCaml) for the bins   
 
-shannon-rust (release build): 20.73s   
-shannon-ocaml               : 48.7s    
+shannon-rust    : 21.940s   
+shannon-ocaml   : 51.469s    
 
    ----------------------------
-style B: bins as mutable arrays  
+style B: using mutable arrays for the bins  
 
-shannon-rust (release build): 0.510s   
-shannon-ocaml               : 2.560s    
+shannon-rust    : 0.612s   
+shannon-ocaml   : 2.435s    
 
 
+
+## discussion
+The HashMap / Hashtbl constructs are inappropriate for speed-oriented binning in the manner done here, but are included for purposes of comparison.   
+
+( However, one option to speed up the OCaml version would be to build a char-specific Hashtbl via the Hashtbl functorial interface, with char-appropriate compare, equality (and maybe hash?) functions)  
+
+Rust, and its std libs are evolving very rapidly right now so that HashMap performance may be in flux as well.  
+
+The array binnning performance differences are slightly surprising. There are further possible tweaks to the OCaml code (unboxing, write-barrier avoidance, etc) that might tighten up the spread, but I have skipped that deeper dive for now.  
+
+The Oprofile runs for all 4 variants ([rust-array](perf-rust-array.txt), [rust-hashmap](perf-rust-hm.txt), [ocaml-array](perf-ocaml-array.txt) and [ocaml-hashtbl](perf-ocaml-hm.txt) ) are unsurprising: Hashtbl/HashMap versions spend most of their time in Hash structure operations, while the array versions are limited more by memory and file-read ops.  
+
+ 
 There is a stale joke to the effect that speed-run optimizations of code written in FP style lead right back to imperative-land. But I kind-of did do this to the OCaml code, whittling down the file reader into something mutable. Hopefully not so much Crude Hackery as 'pragmatic FP'.  
+The Rust variant was patterned after the OCaml code.   
 
-Even so, for *this* quasi-toy program the Rust version(s) run at 2-5x the speed of *similar* OCaml version(s).  
+Even so, for *this* quasi-toy program the Rust version(s) run at 2-4x the speed of *similar* OCaml version(s).  
 
+A next refinement to the OCaml code would be to look for expensive boxing and write-barrier calls...TDB  
 
-
-## comments:
- Rust seems to have an interesting idiomatic style, although these are still early days and my experience with the language is minimal. The ML heritage certainly is there, as is the C/C++ feel. It's not really a functional programming language but still feels comfortable to someone who writes Clojure (and some OCaml) code most of the time.  And it's fast.  
+ Rust seems to have an interesting idiomatic style, although these are still early days and my experience with the language is minimal. The ML heritage certainly is there, as is the C/C++ feel. It's not really a functional programming language but still feels comfortable to someone who writes Clojure (and some OCaml) code most of the time. And it's fast.   
    
-Unfortunately this toy-like code doesn't really excercise traits or the innovative ownership concepts & borrow-checker.  Obviously I need to write some more Rust code :-)   
-
-
-
-## Prerequisites `
-
- The Rust language is still undergoing rapid development; this code is circa Rust-alpha-1.0.0     
+Unfortunately this toy-like code doesn't really dig into traits or the innovative ownership concepts & borrow-checker.  Obviously I need to write some more Rust code :-)   
 
 
 

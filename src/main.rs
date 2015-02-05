@@ -1,12 +1,11 @@
 // Shannon Entropy calculation, from file or string inputs.
 // Includes a few source variations on file-read and binning operations,
 // but uses the fastest variation.
-// 
-//  
+  
 use std::collections;
 use std::num::Float;
 use std::os;
-use std::io;
+use std::old_io;
 
 
 // note: the unicode-friendly graphemes do not include newlines.  
@@ -31,6 +30,7 @@ fn read_str(instr: &str) -> collections::HashMap<&str, int> {
 }
 
 
+
 // read bytes from file and bin the values 
 // one of several variations, this one uses HashMap bins + vector read-buffer. 
 // 
@@ -38,7 +38,7 @@ fn readem_bytes_hm(fname: &str) -> Option< collections::HashMap<u8, int> > {
 
   let mut xbins : collections::HashMap<u8,int> = collections::HashMap::new();
   let path = Path::new(fname);
-  let mut file = io::BufferedReader::new(io::File::open(&path));
+  let mut file = old_io::BufferedReader::new(old_io::File::open(&path));
   let mut buf:Vec<u8> = Vec::new();
   let buffsize = 400000;
 
@@ -68,7 +68,7 @@ fn readem_bytes_hm(fname: &str) -> Option< collections::HashMap<u8, int> > {
                         gotsome = true; }, 
 
         // display all error messages except the 'normal' EOF flag.
-        Err(e) =>  {if e.kind != std::io::IoErrorKind::EndOfFile 
+        Err(e) =>  {if e.kind != std::old_io::IoErrorKind::EndOfFile 
                        {println!("\nfile read error: {}", e.desc);}
 
                     break},
@@ -90,7 +90,7 @@ fn readem_bytes_vector(fname: &str) -> Option<[uint; 256]> {
 
   let mut xbins  = [0u; 256];
   let path = Path::new(fname);
-  let mut file = io::BufferedReader::new(io::File::open(&path));
+  let mut file = old_io::BufferedReader::new(old_io::File::open(&path));
   let mut buf:Vec<u8> = Vec::new();
   let buffsize = 400000;
 
@@ -109,7 +109,7 @@ fn readem_bytes_vector(fname: &str) -> Option<[uint; 256]> {
                       gotsome = true; }, 
 
         // display all error messages except the 'normal' EOF flag.
-        Err(e) =>  {if e.kind != std::io::IoErrorKind::EndOfFile 
+        Err(e) =>  {if e.kind != std::old_io::IoErrorKind::EndOfFile 
                        {println!("\nfile read error: {}", e.desc);} 
                     break},
       } 
@@ -132,7 +132,7 @@ fn readem_bytes_buffer(fname: &str) -> Option<[uint; 256]> {
 
   let mut xbins  = [0u; 256];
   let path = Path::new(fname);
-  let mut file = io::BufferedReader::new(io::File::open(&path));
+  let mut file = old_io::BufferedReader::new(old_io::File::open(&path));
 
   const BUFFSIZE: uint = 400000;
   let mut buf  = [0; BUFFSIZE];
@@ -150,15 +150,16 @@ fn readem_bytes_buffer(fname: &str) -> Option<[uint; 256]> {
       match file.read(&mut buf) {
         Ok(nread) => { for k in (buf.slice(0, nread)).iter() {
 
-                         let foof = *k as uint;
+                         let foof = *k as usize;
                           xbins[foof] = xbins[foof] + 1; 
                       }
                       gotsome = true; }, 
 
         // display all error messages except the 'normal' EOF flag.
-        Err(e) =>  {if e.kind != std::io::IoErrorKind::EndOfFile 
+        Err(e) =>  {if e.kind != std::old_io::IoErrorKind::EndOfFile 
                        {println!("\nfile read error: {}", e.desc);} 
                     break},
+
       } 
    }
 
@@ -281,6 +282,7 @@ fn display_results(results : (f64, f64)) -> () {
    println!("\ncharacter count:  {}", count);
    println!("shannon entropy: {:15.12}", entropy);
 }
+
 
  
 // entry point. map arguments to appropriate handler functions.
