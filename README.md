@@ -12,7 +12,7 @@ Run from command line, passing in a string or, with the -f flag, a filename.
 -h or --help for help.   
 Returns the basic Shannon Entropy in bits.   
 
-### examples
+#### examples
 
 Shannon Entropy of the string "1223334444" (also contained in the demo.txt file)   
 
@@ -30,7 +30,7 @@ shannon -f demo.txt ->
 Just for kicks, here is an informal speed comparison of this code to a mostly similar [OCaml version](https://github.com/jme/shannon) I had previously written:     
 
 
-### prep 
+#### prep 
 
 Rust version: rust-1.0.0-nightly (c5961ad06)  
 OCaml version: 4.01.0  
@@ -47,7 +47,7 @@ all run elapsed times are *real* durations as measured using the unix *time* com
 profile data collected with [Oprofile](http://oprofile.sourceforge.net/news/): "operf *filename*, then: "opreport -l" and "opreport --callgraph"  
 
 
-### results
+#### results
 
 given times are in seconds and are each the average over three runs  
 
@@ -68,13 +68,13 @@ shannon-ocaml   : 2.435s
 ## discussion
 The HashMap / Hashtbl constructs are inappropriate for speed-oriented binning in the manner done here, but are included for purposes of comparison.   
 
-( However, one option to speed up the OCaml version would be to build a char-specific Hashtbl via the Hashtbl functorial interface, with char-appropriate compare, equality (and maybe hash?) functions)  
+> However, one option to speed up the OCaml version would be to build a char-specific Hashtbl via the Hashtbl functorial interface, with char-appropriate compare, equality (and maybe hash) functions  
 
 Rust, and its std libs are evolving very rapidly right now so that HashMap performance may be in flux as well.  
 
 The array binning performance differences are slightly surprising. There are further possible tweaks to the OCaml code (unboxing, write-barrier avoidance, etc) that might tighten up the spread, but I have skipped that deeper dive for now.  
 
-The Oprofile runs for all 4 variants ([rust-array](perf/perf-rust-array.txt), [rust-hashmap](perf/perf-rust-hm.txt), [ocaml-array](perf/perf-ocaml-array.txt) and [ocaml-hashtbl](perf/perf-ocaml-hm.txt) ) are unsurprising: Hashtbl/HashMap versions spend most of their time in Hash structure operations, while the array versions are limited more by memory and file-read ops.  
+Oprofile runs for all 4 variants ([rust-array](perf/perf_rust_array.txt), [rust-hashmap](perf/perf_rust_hm.txt), [ocaml-array](perf/perf_ocaml_array.txt) and [ocaml-hashtbl](perf/perf_ocaml_hm.txt) ) are unsurprising: Hashtbl/HashMap versions spend most of their time in Hash structure operations, while the array versions are limited more by memory and file-read ops.  
 
  
 There is a stale joke to the effect that speed-run optimizations of code written in FP style lead right back to imperative-land. But I kind-of did do this to the OCaml code, whittling down the file reader into something mutable. Hopefully not so much Crude Hackery as 'pragmatic FP'.  
