@@ -72,9 +72,9 @@ The HashMap / Hashtbl constructs are inappropriate for speed-oriented binning in
 
 Rust, and its std libs are evolving very rapidly right now so that HashMap performance may be in flux as well.  
 
-The array binnning performance differences are slightly surprising. There are further possible tweaks to the OCaml code (unboxing, write-barrier avoidance, etc) that might tighten up the spread, but I have skipped that deeper dive for now.  
+The array binning performance differences are slightly surprising. There are further possible tweaks to the OCaml code (unboxing, write-barrier avoidance, etc) that might tighten up the spread, but I have skipped that deeper dive for now.  
 
-The Oprofile runs for all 4 variants ([rust-array](perf-rust-array.txt), [rust-hashmap](perf-rust-hm.txt), [ocaml-array](perf-ocaml-array.txt) and [ocaml-hashtbl](perf-ocaml-hm.txt) ) are unsurprising: Hashtbl/HashMap versions spend most of their time in Hash structure operations, while the array versions are limited more by memory and file-read ops.  
+The Oprofile runs for all 4 variants ([rust-array](perf/perf-rust-array.txt), [rust-hashmap](perf/perf-rust-hm.txt), [ocaml-array](perf/perf-ocaml-array.txt) and [ocaml-hashtbl](perf/perf-ocaml-hm.txt) ) are unsurprising: Hashtbl/HashMap versions spend most of their time in Hash structure operations, while the array versions are limited more by memory and file-read ops.  
 
  
 There is a stale joke to the effect that speed-run optimizations of code written in FP style lead right back to imperative-land. But I kind-of did do this to the OCaml code, whittling down the file reader into something mutable. Hopefully not so much Crude Hackery as 'pragmatic FP'.  
