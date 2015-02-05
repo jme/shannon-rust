@@ -82,10 +82,9 @@ The Rust variant was patterned after the OCaml code.
 
 Even so, for **_this_** quasi-toy program the Rust version(s) run at 2-4x the speed of **_similar_** OCaml version(s).  
 
-> A next refinement to the OCaml code would be to look for expensive boxing and write-barrier calls...TDB  
 
-
-
+  
+   
  Rust seems to have an interesting idiomatic style, although these are still early days and my experience with the language is minimal. The ML heritage certainly is there, as is the C/C++ feel. It's not really a functional programming language but still feels comfortable to someone who writes Clojure (and some OCaml) code most of the time. And it's fast.   
    
 Unfortunately this toy-like code doesn't really dig into traits or the innovative ownership concepts & borrow-checker.  Obviously I need to write some more Rust code :-)   
