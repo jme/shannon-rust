@@ -16,12 +16,12 @@ Returns the basic Shannon Entropy in bits.
 
 Shannon Entropy of the string "1223334444" (also contained in the demo.txt file)   
 
-shannon 1223334444     
+* shannon 1223334444     
 
+or via file: 
+* shannon -f demo.txt   
 
-or via file:   
-shannon -f demo.txt ->    
-
+Result:  
   character count: 10   
   value: 1.84643934467    
  
