@@ -1,167 +1,57 @@
-// Shannon Entropy calculation, from file or string inputs.
-// Includes a few source variations on file-read and binning operations,
-// but uses the fastest variation.
-  
-use std::collections;
-use std::num::Float;
-use std::os;
-use std::old_io;
+/// Shannon Entropy calculator (rust 1.5+)
 
-
-// note: the unicode-friendly graphemes do not include newlines.  
-// using a regular HashMap for bins 
-//
-fn read_str(instr: &str) -> collections::HashMap<&str, int> {
-
-  let mut xbins : collections::HashMap<&str, int> = collections::HashMap::new();
-    
-    for c in instr.graphemes(true){
-
-      if xbins.contains_key(c) {
-
-          match xbins.get_mut(c) {
-
-            Some(x) => {*x = *x + 1},
-            None => (), } }
-
-      else { xbins.insert(c, 1i); }
-     }
- xbins
-}
+use std::io::prelude::*;
+use std::io::BufReader;
+use std::fs::File;
+use std::env;
+use std::collections::HashMap;
 
 
 
-// read bytes from file and bin the values 
-// one of several variations, this one uses HashMap bins + vector read-buffer. 
-// 
-fn readem_bytes_hm(fname: &str) -> Option< collections::HashMap<u8, int> > {
-
-  let mut xbins : collections::HashMap<u8,int> = collections::HashMap::new();
-  let path = Path::new(fname);
-  let mut file = old_io::BufferedReader::new(old_io::File::open(&path));
-  let mut buf:Vec<u8> = Vec::new();
-  let buffsize = 400000;
-
-  // this is a cache of items to be added to the main hash 
-  let mut fngs:Vec<u8> = Vec::new();
-
-  // idempotent flag: just want to indicate that the xbins has
-  // *something* in it...
-  let mut gotsome = false;
-
-   loop {
-      match file.push(buffsize, &mut buf) {
-
-        Ok(nread) => { for z in  (buf.slice(0, nread)).iter() {
-
-                            match xbins.get_mut(z) {
-                              Some(x) => { *x = *x + 1; },
-                              None => {fngs.push(*z); },
-                            } 
-
-                            // add in any new additions to the bins...
-                            for k in fngs.iter() {
-                              xbins.insert(*k, 1i); 
-                            }
-                            fngs.clear();
-                        }
-                        gotsome = true; }, 
-
-        // display all error messages except the 'normal' EOF flag.
-        Err(e) =>  {if e.kind != std::old_io::IoErrorKind::EndOfFile 
-                       {println!("\nfile read error: {}", e.desc);}
-
-                    break},
-      } 
-
-   // empty out the buf for the next loop
-   buf.clear(); 
-   }
-
- if gotsome {Some(xbins)} else {None}
-}
-
-
-
-// read bytes from file and bin the values 
-// one of several variations, this one uses mutable array bins + vector read-buffer. 
-//
-fn readem_bytes_vector(fname: &str) -> Option<[uint; 256]> {
-
-  let mut xbins  = [0u; 256];
-  let path = Path::new(fname);
-  let mut file = old_io::BufferedReader::new(old_io::File::open(&path));
-  let mut buf:Vec<u8> = Vec::new();
-  let buffsize = 400000;
-
-  // idempotent flag: just want to indicate that the xbins has
-  // *something* in it...
-  let mut gotsome = false;
-
-   loop {
-      match file.push(buffsize, &mut buf) {
-
-        Ok(nread) => { for k in (buf.slice(0, nread)).iter() {
-
-                         let foof = *k as uint;
-                          xbins[foof] = xbins[foof] + 1; 
-                      }
-                      gotsome = true; }, 
-
-        // display all error messages except the 'normal' EOF flag.
-        Err(e) =>  {if e.kind != std::old_io::IoErrorKind::EndOfFile 
-                       {println!("\nfile read error: {}", e.desc);} 
-                    break},
-      } 
-
-   // empty out the buf for the next loop
-   buf.clear(); 
-   }
-
- if gotsome {Some(xbins)} else {None}
-}
-
-
-
-// read bytes from file and bin the values 
-// last of the variations, this one uses mutable array bins 
+// read bytes from file and bin the values using mutable array bins 
 // and a raw array read-buffer.
-// (getting somewhat old school with this IO style..).
+// (somewhat old school imperative with this IO style..).
 //
-fn readem_bytes_buffer(fname: &str) -> Option<[uint; 256]> {
+fn bins_of_file_bytes(fname: String) -> Option<[u64; 256]> {
 
-  let mut xbins  = [0u; 256];
-  let path = Path::new(fname);
-  let mut file = old_io::BufferedReader::new(old_io::File::open(&path));
-
-  const BUFFSIZE: uint = 400000;
-  let mut buf  = [0; BUFFSIZE];
-
-
-  // idempotent flag: just want to indicate that the xbins has
-  // *something* in it...
+  // a structurally hacky flag that just indicates that xbins contains *something* 
   let mut gotsome = false;
 
-   loop {
+  let mut xbins  = [0; 256];
 
-      // also, quick note: by using a slice here we don't have to bother with
-      // clearing the buffer between loop calls as the slice
-      // ONLY includes newly-read bytes.
-      match file.read(&mut buf) {
-        Ok(nread) => { for k in (buf.slice(0, nread)).iter() {
+  match File::open(fname) {
+    Ok(f) => {
+              let mut file = BufReader::new(f);
 
-                         let foof = *k as usize;
-                          xbins[foof] = xbins[foof] + 1; 
-                      }
-                      gotsome = true; }, 
+              // just an arbitrary buffer size
+              const BUFFSIZE: usize = 400000;
 
-        // display all error messages except the 'normal' EOF flag.
-        Err(e) =>  {if e.kind != std::old_io::IoErrorKind::EndOfFile 
-                       {println!("\nfile read error: {}", e.desc);} 
-                    break},
+              let mut buf  = [0; BUFFSIZE];
+              gotsome = false;
 
-      } 
-   }
+               loop {
+
+                  // also, quick note: by using a slice here we don't have to bother with
+                  // clearing the buffer between loop calls as the slice
+                  // ONLY includes newly-read bytes.
+                  match file.read(&mut buf) {
+                    Ok(nread) => { for k in (&buf[0..nread]).iter() {
+
+                                     let foof = *k as usize;
+
+                                     xbins[foof] = xbins[foof] + 1; 
+                                  }
+                                  gotsome = true;
+                                  if nread == 0 {break}; }, 
+
+                    Err(e) =>  { println!("\nfile read error: {:?}", e); 
+                                break },
+                  } 
+               }
+             },
+  
+    Err(e) => { println!("\nfile open error: {:?}", e); },
+  }  
 
  if gotsome {Some(xbins)} else {None}
 }
@@ -187,20 +77,20 @@ fn fproc(x:f64, file_length:f64) -> f64  {
 // what it does: reads input and bins chars. Folds-in the entropy calculation
 // and returns result + file length in a tuple.
 //
-fn shannon(s : &str) -> Option<(f64, f64)> {
+fn shannon(s : String) -> Option<(f64, f64)> {
 
-  // the speed of both of these two file input functions is about equal.
-  // readem_bytes_vector and 
-  // readem_bytes_buffer 
-
-   match readem_bytes_buffer(s) {
+   match bins_of_file_bytes(s) {
    
      Some(bins) => { let file_length = 
-                              bins.iter().fold( (0.0 as f64), |a, b| a + (*b as f64)); 
+                              bins.iter()
+                                  .fold( (0.0 as f64),
+                                         |a, b| a + (*b as f64)); 
 
                      let entropy = 
-                             -1f64 * bins.iter().fold( (0.0 as f64),
-                                               |a, b| a + fproc((*b as f64), file_length ));
+                             -1f64 * bins.iter()
+                                         .fold( (0.0 as f64), 
+                                                |a, b| a + fproc((*b as f64), 
+                                                                 file_length ));
 
                      Some( (entropy, file_length) ) 
                    }
@@ -209,28 +99,29 @@ fn shannon(s : &str) -> Option<(f64, f64)> {
 }
 
 
-
-// benchmarking comparison core fn. Uses the HashMap reader.
-// too slow (relatively) for production.
+// generate a bin set for a String input
+// slightly different method than for the file input case
+// returns a HashMap full of bin data for the string input
 //
-fn shannon_hm(s : &str) -> Option<(f64, f64)> {
+fn bins_of_string (instr:  String) -> HashMap<u8, i64> {
 
-   match readem_bytes_hm(s) {
-   
-     Some(bins) => { let file_length = 
-                              bins.iter().fold( (0.0 as f64), 
-                                                 |a, (_, b)| a + (*b as f64)); 
+  let mut xbins : HashMap<u8, i64> = HashMap::new();
 
-                     let entropy = 
-                             -1f64 * bins.iter().fold( (0.0 as f64),
-                                                  |a, (_, b)| a + fproc((*b as f64),
-                                                  file_length ));
+  let cbox = instr.as_bytes();
 
-                     Some( (entropy, file_length) ) 
-                   }
-     None => None 
-   }
+  for c in cbox {
+    if xbins.contains_key(c) {
+
+        match xbins.get_mut(c) {
+          Some(x) => {*x = *x + 1},
+          None => (), } }
+
+    else { xbins.insert(*c, 1i64); }
+  } 
+
+ xbins
 }
+
 
 
 
@@ -239,17 +130,21 @@ fn shannon_hm(s : &str) -> Option<(f64, f64)> {
 // Unlike the file-input core fn the result here is returned in a
 // regular tuple, rather than an Option. 
 //
-fn shannon_str(instr : &str) -> (f64, f64) {
+fn shannon_str(instr : String) -> (f64, f64) {
 
-   let bins = read_str(instr);
+   println!("param: {}", instr);
+   println!("param length: {}", instr.len());
+
    let string_length = instr.len() as f64;
+   let bins = bins_of_string(instr);
 
    let entropy = -1f64 * bins.iter()
-                        .fold( (0.0 as f64), |a, (_, val)| a + 
-                                                              fproc((*val as f64), 
-                                                                     string_length ));
+                             .fold( (0.0 as f64), 
+                                    |a, (_, val)| a + fproc((*val as f64), 
+                                                            string_length ));
   (entropy, string_length)
 }
+
 
 
 
@@ -261,13 +156,13 @@ fn display_usage() -> () {
 
 
 
-// IO: combine err display with usage message
-// accretes err msg and another IO HOF; hmmm...syntax.
+// IO: combine error display with usage message
+// accretes error msg and output of a HOF
 //
-fn helperr<F>(fname: &str, fx:F  )
+fn helperr<F>(msg: &str, fx:F  )
           where F: Fn() -> ()
 {
-  println!("Unknown file: {}\n--------------------", fname);
+  println!("{}", msg);
   fx();
 }
 
@@ -284,36 +179,40 @@ fn display_results(results : (f64, f64)) -> () {
 }
 
 
- 
+
 // entry point. map arguments to appropriate handler functions.
-// probably there is a nice param options lib out there somewhere...
+// probably there is now a nice param options lib out there somewhere...
 //
 fn main() {
 
   // some gratuitous indirection, just for testing & comparing the 
   // various file and binning methods
+
+  // unnecessary here, a vestige of the older rust alpha + beta versions
+  // that compared various IO styles and bin containers 
   let shannon_handler = shannon;
 
 
-   match os::args().len() {
+   match env::args().len() {
 
-     2 => { display_results( shannon_str(os::args()[1].as_slice()) ); },
+     2 => { display_results( shannon_str (env::args().nth(1).unwrap()));},
 
-     3 => { match os::args()[1].as_slice() {
-
-             "-f" => match shannon_handler( os::args()[2].as_slice() ) {
+     3 => { match shannon_handler(env::args().nth(2).unwrap()) {
 
                        Some((x, i)) =>  { display_results((x, i)); },
 
-                       None => helperr(os::args()[2].as_slice(), display_usage ),
-                     },
-
-              _ => display_usage(),
-           } },
+                       None => helperr("", display_usage ),
+                    }
+          },
 
      _ => display_usage(), 
    } 
 
    println!("--------------------");
 }
+
+
+
+
+
 
