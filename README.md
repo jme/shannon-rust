@@ -6,6 +6,10 @@ This is a straightforward implementation of a basic Shannon Entropy calculator i
  Reads bytes from files and characters from strings, calculates the result appropriately.    
  Fairly quick; should churn though 100MB+ files in less than a second.   
 
+ This is an update to a previous version posted last year. Since then rust has undergone many changes, including upheaval in the IO libraries, and those changes required some rewriting.
+
+ Also, the [original branch](https://github.com/jme/shannon-rust/tree/original) version included some variant methods of binning which have been reduced in the current branch (master) to only a plain buffer oriented function that is a similar as possible to the corresponding function of the original. 
+
 
 ## howto
 Run from command line, passing in a string or, with the -f flag, a filename.   
@@ -32,7 +36,8 @@ Just for kicks, here is an informal speed comparison of this code to a mostly si
 
 #### prep 
 
-* Rust version: rust-1.0.0-nightly (c5961ad06)  
+* Rust version (original): rust-1.0.0-nightly (c5961ad06)  
+* Rust version (updated): rust-1.5.0 (8f73f6d1c) 
 * OCaml version: 4.01.0  
 
 * rust executables were built with 'cargo --release'  
@@ -51,6 +56,8 @@ Just for kicks, here is an informal speed comparison of this code to a mostly si
 
 given times are in seconds and are each the average over three runs  
 
+The original included two binning styles, whereas the update just uses mutable array bins
+
    ----------------------------
 style A: using HashMap (Rust) / Hashtbl (OCaml) for the bins   
 
@@ -60,19 +67,24 @@ shannon-ocaml   : 51.469s
    ----------------------------
 style B: using mutable arrays for the bins  
 
-shannon-rust    : 0.612s   
+original shannon-rust    : 0.612s   
+**_updated_**  shannon-rust    : 0.616s   
 shannon-ocaml   : 2.435s    
 
 
 
+
 ## discussion
-The HashMap / Hashtbl constructs are inappropriate for speed-oriented binning in the manner done here, but are included for purposes of comparison.   
+The HashMap / Hashtbl constructs are inappropriate for speed-oriented binning in the manner done here, but were included for purposes of comparison.    
 
 > However, one option to speed up the OCaml version would be to build a char-specific Hashtbl via the Hashtbl functorial interface, with char-appropriate compare, equality (and maybe hash) functions  
 
 Rust, and its std libs are evolving very rapidly right now so that HashMap performance may be in flux as well.  
 
 The array binning performance differences are slightly surprising. There are further possible tweaks to the OCaml code (unboxing, polymorphic compare & write-barrier avoidance, etc) that might tighten up the spread, but I have skipped that deeper dive for now.  
+
+The slight difference in performance between the rust 1.0.0 and rust 1.5.0 versions is inconsequential.  
+  
 
 Oprofile runs for all 4 variants ([rust-array](perf/perf_rust_array.txt), [rust-hashmap](perf/perf_rust_hm.txt), [ocaml-array](perf/perf_ocaml_array.txt) and [ocaml-hashtbl](perf/perf_ocaml_hm.txt) ) are unsurprising: Hashtbl/HashMap versions spend most of their time in Hash structure operations, while the array versions are limited more by memory and file-read ops.  
 
@@ -85,15 +97,15 @@ Even so, for **_this_** quasi-toy program the Rust version(s) run at 2-4x the sp
 
    ----------------------------
    
- Rust seems to have an interesting idiomatic style, although these are still early days and my experience with the language is minimal. The ML heritage certainly is there, as is the C/C++ feel. It's not really a functional programming language but still feels comfortable to someone who writes Clojure (and some OCaml) code most of the time. And it's fast.   
+ Rust has an interesting idiomatic style, although these are still early days and my experience with the language is minimal. The ML heritage certainly is there, as is the C/C++ feel. It's not really a functional programming language but still feels comfortable to someone who writes Clojure (and some OCaml) code most of the time. And it's fast.   
    
-Unfortunately this toy-like code doesn't really dig into traits or the innovative ownership concepts & borrow-checker.  Obviously I need to write some more Rust code :-)   
+Unfortunately this toy-like code doesn't really dig into traits or the innovative ownership concepts & borrow-checker.  Obviously I need to write (even) more Rust code :-)   
 
 
 
 ## License
 
-Copyright © 2015 jm ervin
+Copyright © 2015-2016 jm ervin
 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
