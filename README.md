@@ -8,7 +8,7 @@ This is a straightforward implementation of a basic Shannon Entropy calculator i
 
  This is an update to a previous version posted last year. Since then rust has undergone many changes, including upheaval in the IO libraries, and those changes required some rewriting.
 
- Also, the [original branch](https://github.com/jme/shannon-rust/tree/original) version included some variant methods of binning which have been reduced in the current branch (master) to only a plain buffer oriented function that is a similar as possible to the corresponding function of the original. 
+ Also, the [original branch](https://github.com/jme/shannon-rust/tree/original) version included some variant methods of binning which have been reduced in the current branch (master) to only a plain buffer oriented function that is as similar as possible to the corresponding function of the original. 
 
 
 ## howto
